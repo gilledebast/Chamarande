@@ -10,86 +10,56 @@
  */ 
 
 //TB6612FNG Dual Motor Driver pololu
-#define STBY         8  // Standby
-#define AIN1         9  // Motor A In 1
-#define AIN2        10  // Motor A In 2
 #define PWMA        11  // Motor A PWM
+#define AIN2        10  // Motor A In 2
+#define AIN1         9  // Motor A In 1
+#define STBY         8  // Standby
+#define BIN1         7  // Motor A In 1
+#define BIN2         6  // Motor A In 2
+#define PWMB         5  // Motor A PWM
 
-#define limitSwitch  3
 #define led         13
-
-#define soundSensor A0
-
-int soundValue;
-const int threshold = 60;
 
 void setup() {
 
-  pinMode(STBY,OUTPUT);
-  pinMode(AIN1,OUTPUT);
-  pinMode(AIN2,OUTPUT);
   pinMode(PWMA,OUTPUT);
+  pinMode(AIN2,OUTPUT);
+  pinMode(AIN1,OUTPUT);
+  pinMode(STBY,OUTPUT);
+  pinMode(BIN1,OUTPUT);
+  pinMode(BIN2,OUTPUT);
+  pinMode(PWMB,OUTPUT);
   
-  pinMode(limitSwitch,INPUT);
   pinMode(led,OUTPUT);
-
-  pinMode(soundSensor,INPUT);
 
   Serial.begin(9600);
 
   Serial.println("Initialise...");
-  Serial.println("Back to ZERO");
   
   motor_standby(false);
-  while (digitalRead(limitSwitch) == LOW) {
-    motor_control(0,100);
-  }
-  motor_control(1,30);
-  delay(1000);
+  motor_control(1, 100, AIN1, AIN2, PWMA);
+  motor_control(1, 100, BIN1, BIN2, PWMB);
+  delay(2000);
+  motor_control(0, 100, AIN1, AIN2, PWMA);
+  motor_control(0, 100, BIN1, BIN2, PWMB);  
+  delay(2000);
   motor_standby(true);
 
   Serial.println("Ready!");
 }
 
-int count = 0;
-int frame = 10;
-
 void loop() {
 
-  soundValue=analogRead(soundSensor);   //connect mic sensor to Analog 0
-  Serial.println(soundValue,DEC);       //print the sound value to serial        
-  
-  if(soundValue > threshold){ 
-    count++;
-    Serial.println("Sound Detected!");
-    frame = 10;
-  }
-
-    if(count == 2){
-      motor_standby(false);
-      motor_control(1,100);
-      delay(500);
-      motor_standby(true);
-
-      count = 0;
-    }
-  
-  if(frame > 0){frame--;}
-  if(frame == 0){count = 0;}
-
-  delay(50);
-
-  //Serial.println("frame : "+String(frame)+" conut : "+String(count));
 }
 
-void motor_control(boolean direction, char speed){ //speed from 0 to 100
+void motor_control(boolean direction, char speed, int IN1, int IN2, int PWM){ //speed from 0 to 100
 
   if (direction == 0) {
-    digitalWrite(AIN1,HIGH);
-    digitalWrite(AIN2,LOW);
+    digitalWrite(IN1,HIGH);
+    digitalWrite(IN2,LOW);
   } else {
-    digitalWrite(AIN1,LOW);
-    digitalWrite(AIN2,HIGH);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,HIGH);
   }
   
   if(speed < 0){
@@ -100,7 +70,7 @@ void motor_control(boolean direction, char speed){ //speed from 0 to 100
   
   byte PWMvalue=0;
   PWMvalue = map(abs(speed),0,100,50,255); //anything below 50 is very weak
-  analogWrite(PWMA,PWMvalue);
+  analogWrite(PWM,PWMvalue);
 }
 
 void motor_standby(boolean state) { //low power mode
