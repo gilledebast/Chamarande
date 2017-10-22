@@ -32,28 +32,87 @@ void setup() {
   
   pinMode(led,OUTPUT);
 
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   Serial.println("Initialise...");
   
   motor_standby(false);
-  motor_control(1, 100, AIN1, AIN2, PWMA);
-  motor_control(1, 100, BIN1, BIN2, PWMB);
-  delay(2000);
-  motor_control(0, 100, AIN1, AIN2, PWMA);
-  motor_control(0, 100, BIN1, BIN2, PWMB);  
-  delay(2000);
+
+  
+  motor_control(0,100,"A");
+  motor_control(0,100,"B");
+  
+  //motor_control(1, 100, AIN1, AIN2, PWMA);
+  //motor_control(1, 100, BIN1, BIN2, PWMB);
+  //delay(2000);
+  //motor_control(0, 100, AIN1, AIN2, PWMA);
+  //motor_control(0, 100, BIN1, BIN2, PWMB);  
+  delay(200000);
   motor_standby(true);
 
   Serial.println("Ready!");
 }
 
-void loop() {
+void loop() {}
 
+void serialEvent() {
+  while (Serial.available()) {
+    char inChar = Serial.read();
+    Serial.print("Received :");
+    Serial.println(inChar);
+
+    if(inChar == 'P') {
+      go("forward",100);
+    } else if(inChar == 's') {
+      go("backward",100);
+    } else if(inChar == 'q') {
+      go("left",100);
+    } else if(inChar == 'd') {
+      go("right",100);
+    } else { 
+      Serial.println("Unknow Command");
+    }
+  }
 }
 
-void motor_control(boolean direction, char speed, int IN1, int IN2, int PWM){ //speed from 0 to 100
+void go(String direction, char speed){
+  
+  motor_standby(false);
+  
+  if(direction == "forward") {
+    motor_control(0,speed,"A");
+    motor_control(1,speed,"B");
+  } else if(direction == "backward") {
+    motor_control(1,speed,"A");
+    motor_control(0,speed,"B");
+  } else if(direction == "left") {
+    motor_control(0,speed,"A");
+    motor_control(0,speed,"B");
+  } else if(direction == "right") {
+    motor_control(0,speed,"A");
+    motor_control(0,speed,"B");
+  } else {
+    Serial.println("GO ? Unknow Command");
+  }
 
+  delay(1000);
+  motor_standby(true);
+}
+
+void motor_control(boolean direction, char speed, String Motor){ //speed from 0 to 100
+
+  int IN1,IN2,PWM;
+  
+  if(Motor == "A"){
+    IN1 = AIN1;
+    IN2 = AIN2;
+    PWM = PWMA;
+  } else if (Motor == "B"){
+    IN1 = BIN1;
+    IN2 = BIN2;
+    PWM = PWMB;
+  }
+  
   if (direction == 0) {
     digitalWrite(IN1,HIGH);
     digitalWrite(IN2,LOW);
