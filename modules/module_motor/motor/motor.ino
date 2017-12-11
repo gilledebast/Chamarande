@@ -1,24 +1,11 @@
-/* ----------------------------------------------------------------------------------------------------
- * Chamarande, 2017
- * Update: 01/10/17
- * 
- * V1
- * Written by Bastien DIDIER
- * more info :
- *
- * ----------------------------------------------------------------------------------------------------
- */ 
-
 //TB6612FNG Dual Motor Driver pololu
-#define PWMA        11  // Motor A PWM
-#define AIN2        10  // Motor A In 2
-#define AIN1         9  // Motor A In 1
-#define STBY         8  // Standby
-#define BIN1         7  // Motor A In 1
-#define BIN2         6  // Motor A In 2
-#define PWMB         5  // Motor A PWM
-
-#define led         13
+#define PWMA  5  // Motor A PWM
+#define AIN2  6  // Motor A In 2
+#define AIN1  7  // Motor A In 1
+#define STBY  8  // Standby
+#define BIN1  9  // Motor B In 1
+#define BIN2 10  // Motor B In 2
+#define PWMB 11  // Motor B PWM
 
 void setup() {
 
@@ -29,28 +16,19 @@ void setup() {
   pinMode(BIN1,OUTPUT);
   pinMode(BIN2,OUTPUT);
   pinMode(PWMB,OUTPUT);
-  
-  pinMode(led,OUTPUT);
+ 
+  Serial.begin(9600);
 
-  Serial.begin(115200);
-
-  Serial.println("Initialise...");
-  
-  motor_standby(false);
-
-  
-  motor_control(0,100,"A");
-  motor_control(0,100,"B");
-  
-  //motor_control(1, 100, AIN1, AIN2, PWMA);
-  //motor_control(1, 100, BIN1, BIN2, PWMB);
-  //delay(2000);
-  //motor_control(0, 100, AIN1, AIN2, PWMA);
-  //motor_control(0, 100, BIN1, BIN2, PWMB);  
-  delay(200000);
-  motor_standby(true);
-
-  Serial.println("Ready!");
+  Serial.println("Chamarande Controller: starting...");
+  // print help
+  Serial.println("Help Commands: ");
+  Serial.println();
+  Serial.println("    'z' = move the plant forward for 100ms");
+  Serial.println("    's' = move the plant backward for 100ms");
+  Serial.println("    'q' = move the plant left for 100ms");
+  Serial.println("    'd' = move the plant right for 100ms");
+  Serial.println();
+  Serial.println("Waiting for commands...");
 }
 
 void loop() {}
@@ -61,21 +39,21 @@ void serialEvent() {
     Serial.print("Received :");
     Serial.println(inChar);
 
-    if(inChar == 'P') {
-      go("forward",100);
+    if(inChar == 'z') {
+      go("forward",100,100);
     } else if(inChar == 's') {
-      go("backward",100);
+      go("backward",100,100);
     } else if(inChar == 'q') {
-      go("left",100);
+      go("left",100,100);
     } else if(inChar == 'd') {
-      go("right",100);
+      go("right",100,100);
     } else { 
       Serial.println("Unknow Command");
     }
   }
 }
 
-void go(String direction, char speed){
+void go(String direction, char speed, int ms_delay){
   
   motor_standby(false);
   
@@ -89,13 +67,13 @@ void go(String direction, char speed){
     motor_control(0,speed,"A");
     motor_control(0,speed,"B");
   } else if(direction == "right") {
-    motor_control(0,speed,"A");
-    motor_control(0,speed,"B");
+    motor_control(1,speed,"A");
+    motor_control(1,speed,"B");
   } else {
     Serial.println("GO ? Unknow Command");
   }
 
-  delay(1000);
+  delay(ms_delay);
   motor_standby(true);
 }
 
