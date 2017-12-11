@@ -49,10 +49,10 @@ int direction_count[4]; //left = 0; right = 1; forward = 3; backward = 4;
 /*******************************/
 
 int time_betwen_move = 10; //in s
-int data_resolution = 3; //how many captureted data  for process mouvement
+int data_resolution = 3; //how many captureted data  for process mouvement (minimum 3)
 
-int min_move_duration = 100;
-int max_move_duration = 1000;
+int min_move_duration = 100; //temps minimum de deplacement
+int max_move_duration = 1000; //temps maximum de deplacement
 
 /*******************************/
 void setup() {
